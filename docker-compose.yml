@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  postgres:
+    image: library/postgres:latest
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      POSTGRES_DB: onyx_dev
+      POSTGRES_USER: onyx
+      POSTGRES_PASSWORD: onyx
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d/
+    ports:
+      - 5432:5432
