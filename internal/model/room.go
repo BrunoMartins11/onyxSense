@@ -1,6 +1,6 @@
 package model
 
 type Room struct {
-	ID int64
+	ID int
 	Name string
 }

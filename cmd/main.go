@@ -11,8 +11,9 @@ import (
 var manager store.Manager
 
 func main(){
+	connStr := "user=onyx dbname=onyx_dev password=onyx host=localhost sslmode=disable"
 	db, err := sql.Open("postgres",
-		"onyx:onyx@tcp(127.0.0.1:5432)/onyx_dev")
+		connStr)
 	if err != nil {
 		log.Fatal(err)
 	}

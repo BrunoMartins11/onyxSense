@@ -5,7 +5,7 @@ import (
 )
 
 type Presence struct {
-	Id int64
+	ID int
 	MAC string
 	LastDetected *time.Time
 	RoomID int64

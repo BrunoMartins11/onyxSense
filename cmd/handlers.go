@@ -28,7 +28,7 @@ func CreateSensorHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	roomName := req.URL.Query().Get("NameId")
+	roomName := req.URL.Query().Get("RoomName")
 	sensorName := req.URL.Query().Get("SensorName")
 	if roomName == "" || sensorName == "" {
 		w.WriteHeader(http.StatusBadRequest)

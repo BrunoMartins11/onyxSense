@@ -7,9 +7,9 @@ import (
 type Store interface {
 	SaveNewRoom(room model.Room) error
 	GetRoomByName(roomName string) model.Room
-	SaveNewSensor(sensor model.Sensor, roomID int64) error
-	SaveNewPresence(presence model.Presence, roomID int64) error
-	GetRoomPresences(roomID int64) []model.Presence
+	SaveNewSensor(sensor model.Sensor, roomID int) error
+	SaveNewPresence(presence model.Presence, roomID int) error
+	GetRoomPresences(roomID int) []model.Presence
 }
 
 type Manager struct {

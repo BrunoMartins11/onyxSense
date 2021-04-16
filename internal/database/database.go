@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	"github.com/BrunoMartins11/onyxSense/internal/model"
 	"log"
 )
@@ -24,32 +25,41 @@ func (db Database) SaveNewRoom(room model.Room) error {
 }
 
 func (db Database) GetRoomByName(roomName string) model.Room {
-	var room model.Room
-	_ = db.DB.QueryRowContext(context.TODO(),
-		"SELECT * FROM rooms WHERE name = $1", roomName).Scan(&room)
-	return room
+	var roomID int
+	var name string
+	fmt.Println(roomName)
+	err := db.DB.QueryRowContext(context.TODO(),
+		"SELECT * FROM rooms WHERE name = $1", roomName).Scan(&roomID, &name)
+	if err != nil {
+		log.Println(err)
+		return model.Room{}
+	}
+	fmt.Println(roomID)
+	return model.Room{roomID, name}
 }
 
-func (db Database) SaveNewSensor(sensor model.Sensor, roomID int64) error {
+func (db Database) SaveNewSensor(sensor model.Sensor, roomID int) error {
 	_, err := db.DB.ExecContext(context.TODO(),
-		"INSERT INTO sensors (name, roomID) VALUES ($1, $2)",
-		sensor.Name,
+		"INSERT INTO sensors (roomid, name) VALUES ($1, $2)",
 		roomID,
+		sensor.Name,
 	)
 	return err
 }
 
-func (db Database) SaveNewPresence(presence model.Presence , roomID int64) error {
+func (db Database) SaveNewPresence(presence model.Presence , roomID int) error {
 	_, err := db.DB.ExecContext(context.TODO(),
-		"INSERT INTO presences (MAC, lastDetected, roomID) VALUES ($1, $2, $3)",
+		"INSERT INTO presences (mac, lastdetected, active, roomid) VALUES ($1, $2, $3, $4)",
 		presence.MAC,
 		presence.LastDetected,
+		presence.Active,
 		roomID,
 	)
 	return err
 }
 
-func (db Database) GetRoomPresences(roomID int64) []model.Presence {
+func (db Database) GetRoomPresences(roomID int) []model.Presence {
+	//TODO fix like get room by name
 	rows, err := db.DB.QueryContext(context.TODO(),
 		"SELECT * FROM presences WHERE roomID = $1", roomID)
 

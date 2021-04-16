@@ -1,7 +1,7 @@
 package model
 
 type Sensor struct {
-	ID int64
+	ID int
 	Name string
 	RoomID int64
 }
