@@ -13,7 +13,7 @@ func CreateRoomHandler(w http.ResponseWriter, req *http.Request) {
 
 	roomName := req.URL.Query().Get("RoomName")
 
-	err := model.CreateRoom(roomName)
+	err := manager.RegisterNewRoom(model.Room{Name: roomName})
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		_, _ = w.Write([]byte(`{"error": "` + err.Error() + `"}`))
@@ -34,7 +34,7 @@ func CreateSensorHandler(w http.ResponseWriter, req *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	err := model.CreateSensor(sensorName, roomName)
+	err := manager.RegisterNewSensor(model.Sensor{Name: sensorName}, roomName)
 	if err != nil {
 		w.WriteHeader(http.StatusNotAcceptable)
 		_, _ = w.Write([]byte(`{"error": "` + err.Error() + `"}`))
