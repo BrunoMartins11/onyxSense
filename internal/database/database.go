@@ -3,7 +3,7 @@ package database
 import (
 	"context"
 	"database/sql"
-	"fmt"
+	"errors"
 	"github.com/BrunoMartins11/onyxSense/internal/model"
 	"log"
 )
@@ -21,20 +21,20 @@ func (db Database) SaveNewRoom(room model.Room) error {
 		"INSERT INTO rooms (name) VALUES ($1)",
 		room.Name,
 	)
-	return err
+	if err != nil {
+		return errors.New("check if room name already exists")
+	}
+	return nil
 }
 
 func (db Database) GetRoomByName(roomName string) model.Room {
 	var roomID int
 	var name string
-	fmt.Println(roomName)
 	err := db.DB.QueryRowContext(context.TODO(),
 		"SELECT * FROM rooms WHERE name = $1", roomName).Scan(&roomID, &name)
 	if err != nil {
-		log.Println(err)
 		return model.Room{}
 	}
-	fmt.Println(roomID)
 	return model.Room{roomID, name}
 }
 
@@ -44,6 +44,9 @@ func (db Database) SaveNewSensor(sensor model.Sensor, roomID int) error {
 		roomID,
 		sensor.Name,
 	)
+	if err != nil {
+		return errors.New("check if sensor name already exists")
+	}
 	return err
 }
 
@@ -55,6 +58,7 @@ func (db Database) SaveNewPresence(presence model.Presence , roomID int) error {
 		presence.Active,
 		roomID,
 	)
+
 	return err
 }
 

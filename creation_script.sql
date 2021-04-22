@@ -25,3 +25,9 @@ ALTER TABLE presences
     ADD CONSTRAINT roomID
         FOREIGN KEY (roomID)
             REFERENCES rooms (ID);
+
+CREATE UNIQUE INDEX  sensors_name_room
+ON sensors (name, roomid);
+
+CREATE UNIQUE INDEX  room_name
+ON rooms (name);
