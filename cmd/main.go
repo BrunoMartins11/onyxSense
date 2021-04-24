@@ -26,10 +26,10 @@ func main(){
 		log.Fatal(err)
 	}
 	data := database.NewDatabase(db)
-	manager = store.NewManager(data)
-	
-	conn := comms.CreateMQClient()
-	go conn.SubscribeToQueue("QueueService1")
+	queue := comms.CreateMQClient()
+	manager = store.NewManager(data, queue)
+
+	go manager.InitializeSubscriber("QueueService1")
 
 	http.HandleFunc("/createRoom", CreateRoomHandler)
 	http.HandleFunc("/createSensor", CreateSensorHandler)

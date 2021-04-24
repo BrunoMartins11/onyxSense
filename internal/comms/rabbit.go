@@ -19,7 +19,7 @@ func CreateMQClient() MQClient{
 	return MQClient{conn}
 }
 
-func (mq MQClient) SubscribeToQueue(queueName string) {
+func (mq MQClient) SubscribeToQueue(queueName string, channel chan []byte) {
 	ch, _ := mq.conn.Channel()
 
 	msgs, err := ch.Consume(
@@ -40,6 +40,7 @@ func (mq MQClient) SubscribeToQueue(queueName string) {
 	go func() {
 		for d := range msgs {
 			fmt.Printf("Recieved Message: %s\n", d.Body)
+			channel <- d.Body
 		}
 	}()
 	<-forever

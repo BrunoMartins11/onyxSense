@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/BrunoMartins11/onyxSense/internal/model"
 	"log"
 )
@@ -51,6 +52,8 @@ func (db Database) SaveNewSensor(sensor model.Sensor, roomID int) error {
 }
 
 func (db Database) SaveNewPresence(presence model.Presence , roomID int) error {
+	fmt.Println(presence)
+	fmt.Println(roomID)
 	_, err := db.DB.ExecContext(context.TODO(),
 		"INSERT INTO presences (mac, lastdetected, active, roomid) VALUES ($1, $2, $3, $4)",
 		presence.MAC,
@@ -85,5 +88,17 @@ func (db Database) GetRoomPresences(roomID int) []model.Presence {
 		log.Fatal(err)
 	}
 	return presences
+}
+
+func (db Database) GetRoomBySensorName(sensorName string) model.Room {
+	var roomID int
+	var name string
+	err := db.DB.QueryRowContext(context.TODO(),
+		"SELECT r.id, r.name FROM rooms r, sensors s WHERE s.name = $1 AND s.roomid = r.id", sensorName).Scan(&roomID, &name)
+	if err != nil {
+		log.Println(err)
+		return model.Room{}
+	}
+	return model.Room{roomID, name}
 }
 
