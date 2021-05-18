@@ -33,6 +33,10 @@ func main(){
 
 	http.HandleFunc("/createRoom", CreateRoomHandler)
 	http.HandleFunc("/createSensor", CreateSensorHandler)
+	http.HandleFunc("/getRooms", GetRooms)
+	http.HandleFunc("/getRoomActivePresences", GetRoomActivePresences)
+	http.HandleFunc("/getRoomPresencesByDelta", GetRoomPresencesByDelta)
+
 
 	log.Fatal(http.ListenAndServe(os.Getenv("PORT"), nil))
 }

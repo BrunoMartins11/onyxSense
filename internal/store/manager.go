@@ -2,7 +2,6 @@ package store
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/BrunoMartins11/onyxSense/internal/model"
 	"log"
 	"time"
@@ -22,6 +21,9 @@ type Store interface {
 	SaveNewPresence(presence model.Presence, roomID int) error
 	GetRoomPresences(roomID int) []model.Presence
 	GetRoomBySensorName(sensorName string) model.Room
+	GetRooms() []model.Room
+	GetActivePresencesByRoom(roomName string) []model.Presence
+	GetAllPresencesByRoom(roomName string) []model.Presence
 }
 
 type Queue interface {
@@ -97,4 +99,18 @@ func (manager Manager) SaveMSGReceived(payload []byte) {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (manager Manager) GetAllRooms() []model.Room{
+	return manager.Store.GetRooms()
+}
+
+func (manager Manager) GetRoomActivePresences(roomName string) []model.Presence {
+	return manager.Store.GetActivePresencesByRoom(roomName)
+}
+
+func (manager Manager) GetAllPresencesByRoomAndDelta(roomName string, delta string) []model.Presence{
+	presences := manager.Store.GetAllPresencesByRoom(roomName)
+	//TODO filter by delta
+	return presences
 }
