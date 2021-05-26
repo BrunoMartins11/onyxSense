@@ -24,6 +24,7 @@ type Store interface {
 	GetRooms() []model.Room
 	GetActivePresencesByRoom(roomName string) []model.Presence
 	GetAllPresencesByRoom(roomName string) []model.Presence
+	UpdatePresenceState(MAC string, state bool)
 }
 
 type Queue interface {
@@ -95,7 +96,11 @@ func (manager Manager) SaveMSGReceived(payload []byte) {
 		Active: msg.Active,
 	}
 	room := manager.Store.GetRoomBySensorName(msg.DeviceID)
-	err = manager.RegisterNewPresence(presence, room.ID)
+	if msg.Active {
+		err = manager.RegisterNewPresence(presence, room.ID)
+	} else {
+		manager.Store.UpdatePresenceState(msg.MacAddress, msg.Active)
+	}
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,6 +116,37 @@ func (manager Manager) GetRoomActivePresences(roomName string) []model.Presence 
 
 func (manager Manager) GetAllPresencesByRoomAndDelta(roomName string, delta string) []model.Presence{
 	presences := manager.Store.GetAllPresencesByRoom(roomName)
-	//TODO filter by delta
-	return presences
+	var ret []model.Presence
+	for _, p := range presences {
+		if delta == "M" && p.LastDetected.After(BeginningOfMonth(time.Now())){
+			ret = append(ret, p)
+		}
+		if delta == "D" && p.LastDetected.After(BeginningOfDay(time.Now())){
+			ret = append(ret, p)
+		}
+		if delta == "W" {
+			year, week := p.LastDetected.ISOWeek()
+			y, w := time.Now().ISOWeek()
+			if year == y && w == week {
+				ret = append(ret, p)
+			}
+		}
+	}
+	return ConvertTime(ret)
+}
+
+func BeginningOfMonth(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), 1, 0, 0, 0, 0, t.Location())
+}
+
+func BeginningOfDay(t time.Time) time.Time {
+	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, t.Location())
+}
+
+func ConvertTime(list []model.Presence) []model.Presence{
+	for _, p := range list {
+		t := time.Date(p.LastDetected.Year(), p.LastDetected.Month(), p.LastDetected.Day(), 0, 0, 0, 0, p.LastDetected.Location())
+		p.LastDetected = &t
+	}
+	return list
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"github.com/BrunoMartins11/onyxSense/internal/model"
 	"log"
 	"time"
@@ -53,8 +52,6 @@ func (db Database) SaveNewSensor(sensor model.Sensor, roomID int) error {
 }
 
 func (db Database) SaveNewPresence(presence model.Presence, roomID int) error {
-	fmt.Println(presence)
-	fmt.Println(roomID)
 	_, err := db.DB.ExecContext(context.TODO(),
 		"INSERT INTO presences (mac, lastdetected, active, roomid) VALUES ($1, $2, $3, $4)",
 		presence.MAC,
@@ -67,7 +64,6 @@ func (db Database) SaveNewPresence(presence model.Presence, roomID int) error {
 }
 
 func (db Database) GetRoomPresences(roomID int) []model.Presence {
-	//TODO fix like get room by name
 	rows, err := db.DB.QueryContext(context.TODO(),
 		"SELECT * FROM presences WHERE roomID = $1", roomID)
 
@@ -79,11 +75,7 @@ func (db Database) GetRoomPresences(roomID int) []model.Presence {
 	var presences []model.Presence
 
 	for rows.Next() {
-		var pres model.Presence
-		if err := rows.Scan(&pres); err != nil {
-			log.Fatal(err)
-		}
-		presences = append(presences, pres)
+		presences = parsePresences(rows, presences)
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
@@ -139,15 +131,7 @@ func (db Database) GetActivePresencesByRoom(roomName string) []model.Presence {
 	var presences []model.Presence
 
 	for rows.Next() {
-		var ID int
-		var MAC string
-		var LastDetected *time.Time
-		var RoomID int
-		var Active bool
-		if err := rows.Scan(&ID, &MAC, &LastDetected, &Active, &RoomID); err != nil {
-			log.Fatal(err)
-		}
-		presences = append(presences, model.Presence{ID, MAC, LastDetected, RoomID, Active})
+		presences = parsePresences(rows, presences)
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
@@ -167,18 +151,31 @@ func (db Database) GetAllPresencesByRoom(roomName string) []model.Presence {
 	var presences []model.Presence
 
 	for rows.Next() {
-		var ID int
-		var MAC string
-		var LastDetected *time.Time
-		var RoomID int
-		var Active bool
-		if err := rows.Scan(&ID, &MAC, &LastDetected, &Active, &RoomID); err != nil {
-			log.Fatal(err)
-		}
-		presences = append(presences, model.Presence{ID, MAC, LastDetected, RoomID, Active})
+		presences = parsePresences(rows, presences)
 	}
 	if err := rows.Err(); err != nil {
 		log.Fatal(err)
 	}
+	return presences
+}
+
+func (db Database) UpdatePresenceState(MAC string, state bool) {
+	err, _ := db.DB.ExecContext(context.TODO(),
+		"UPDATE presences SET active = $2 WHERE mac = $1", &MAC, &state)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func parsePresences(rows *sql.Rows, presences []model.Presence) []model.Presence {
+	var ID int
+	var MAC string
+	var LastDetected *time.Time
+	var RoomID int
+	var Active bool
+	if err := rows.Scan(&ID, &MAC, &LastDetected, &RoomID, &Active); err != nil {
+		log.Fatal(err)
+	}
+	presences = append(presences, model.Presence{ID, MAC, LastDetected, RoomID, Active})
 	return presences
 }
